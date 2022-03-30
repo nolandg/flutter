@@ -42,8 +42,7 @@ import 'common.dart';
 /// and it returns `true` if both images are equal.
 ///
 /// As a result, returning `false` from `onScreenshot` will make the test fail.
-Future<void> integrationDriver(
-    {FlutterDriver? driver, ScreenshotCallback? onScreenshot}) async {
+Future<void> integrationDriver({FlutterDriver? driver, ScreenshotCallback? onScreenshot}) async {
   driver ??= await FlutterDriver.connect();
   // Test states that it's waiting on web driver commands.
   // [DriverTestMessage] is converted to string since json format causes an
@@ -54,9 +53,7 @@ Future<void> integrationDriver(
 
   // Until `integration_test` returns a [WebDriverCommandType.noop], keep
   // executing WebDriver commands.
-  while (response.data != null &&
-      response.data!['web_driver_command'] != null &&
-      response.data!['web_driver_command'] != '${WebDriverCommandType.noop}') {
+  while (response.data != null && response.data!['web_driver_command'] != null && response.data!['web_driver_command'] != '${WebDriverCommandType.noop}') {
     final String? webDriverCommand = response.data!['web_driver_command'] as String?;
     if (webDriverCommand == '${WebDriverCommandType.screenshot}') {
       assert(onScreenshot != null, 'screenshot command requires an onScreenshot callback');
@@ -68,15 +65,13 @@ Future<void> integrationDriver(
       if (screenshotSuccess) {
         jsonResponse = await driver.requestData(DriverTestMessage.complete().toString());
       } else {
-        jsonResponse =
-            await driver.requestData(DriverTestMessage.error().toString());
+        jsonResponse = await driver.requestData(DriverTestMessage.error().toString());
       }
 
       response = Response.fromJson(jsonResponse);
     } else if (webDriverCommand == '${WebDriverCommandType.ack}') {
       // Previous command completed ask for a new one.
-      jsonResponse =
-          await driver.requestData(DriverTestMessage.pending().toString());
+      jsonResponse = await driver.requestData(DriverTestMessage.pending().toString());
 
       response = Response.fromJson(jsonResponse);
     } else {
@@ -85,9 +80,7 @@ Future<void> integrationDriver(
   }
 
   // If No-op command is sent, ask for the result of all tests.
-  if (response.data != null &&
-      response.data!['web_driver_command'] != null &&
-      response.data!['web_driver_command'] == '${WebDriverCommandType.noop}') {
+  if (response.data != null && response.data!['web_driver_command'] != null && response.data!['web_driver_command'] == '${WebDriverCommandType.noop}') {
     jsonResponse = await driver.requestData(null);
 
     response = Response.fromJson(jsonResponse);
@@ -99,6 +92,7 @@ Future<void> integrationDriver(
     final List<String> failures = <String>[];
     for (final dynamic screenshot in screenshots) {
       final Map<String, dynamic> data = screenshot as Map<String, dynamic>;
+      if (data['screenshotName'] == null) continue;
       final List<dynamic> screenshotBytes = data['bytes'] as List<dynamic>;
       final String screenshotName = data['screenshotName'] as String;
 
@@ -116,7 +110,7 @@ Future<void> integrationDriver(
       }
     }
     if (failures.isNotEmpty) {
-     throw StateError('The following screenshot tests failed: ${failures.join(', ')}');
+      throw StateError('The following screenshot tests failed: ${failures.join(', ')}');
     }
   }
 
